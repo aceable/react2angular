@@ -19,7 +19,7 @@ import { react2angular } from './'
 class TestOne extends React.Component<Props> {
   render() {
     return <div>
-      <p>Foo: {this.props.foo}</p>
+      <p>Foo: {this?.props.foo}</p>
       <p>Bar: {this.props.bar.join(',')}</p>
       <p onClick={() => this.props.baz(42)}>Baz</p>
       {this.props.children}
@@ -28,7 +28,7 @@ class TestOne extends React.Component<Props> {
   componentWillUnmount() { }
 }
 
-const TestTwo: React.StatelessComponent<Props> = props =>
+const TestTwo: React.FunctionComponent<Props> = (props: Props) =>
   <div>
     <p>Foo: {props.foo}</p>
     <p>Bar: {props.bar.join(',')}</p>
@@ -36,7 +36,7 @@ const TestTwo: React.StatelessComponent<Props> = props =>
     {props.children}
   </div>
 
-const TestThree: React.StatelessComponent = () =>
+const TestThree: React.FunctionComponent = () =>
   <div>Foo</div>
 
 class TestFour extends React.Component<Props> {
@@ -184,6 +184,7 @@ interface Props {
   bar: boolean[]
   baz(value: number): any
   foo: number
+  children: React.ReactNode,
 }
 
 describe('react2angular', () => {
@@ -323,7 +324,7 @@ describe('react2angular', () => {
     })
 
     it('should take injections, which override props', () => {
-      spyOn($http, 'get').and.returnValue($q.resolve({ data: '$http response' }))
+      spyOn($http, 'get').and.returnValue($q<any>((resolve, _reject) => resolve({data: '$http response'})))
       const scope = Object.assign($rootScope.$new(true), {
         foo: 'FOO'
       })
@@ -408,6 +409,7 @@ describe('react2angular', () => {
         baz: (value: number) => value + 1,
         foo: 1
       })
+      console.log('2222scope', scope)
       const element = $(`<test-angular-two foo="foo" bar="bar" baz="baz"><span>Transcluded</span></test-angular-two>`)
       $compile(element)(scope)
       $rootScope.$apply()
